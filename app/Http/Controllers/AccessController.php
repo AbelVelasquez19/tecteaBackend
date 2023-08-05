@@ -95,5 +95,7 @@ class AccessController extends Controller
          $READ = exec_query("ACCESOS.SP_LOGIN",$CMD);
          return response()->json(['DATA'=> $READ[0]],200);
       }
+
+      //falta validacion
    }
 }
