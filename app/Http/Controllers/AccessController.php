@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use PhpParser\Node\Stmt\Return_;
 
 class AccessController extends Controller
 {
@@ -68,23 +69,31 @@ class AccessController extends Controller
 
    public function createUser(Request $request){
       $PERF_CODIGO = 01;
+      $PERS_DOCUMENTO = e($request->input('PERS_DOCUMENTO'));
+      $PERS_NOMCOM = e($request->input('PERS_NOMCOM'));
       $USUA_USERNAME = e($request->input('USUA_USERNAME'));
       $USUA_PASSWORD = e($request->input('USUA_PASSWORD'));
-      $PERS_CODIGO = e($request->input('PERS_CODIGO'));
       $AREA_CODIGO = 01;
       $USEA_TOKEN = $this->apiToken;
+
       unset($CMD);
-      $CMD[] = array('@OPTION',4);
-      $CMD[] = array('@PERF_CODIGO',$PERF_CODIGO);
-      $CMD[] = array('@USUA_USERNAME',$USUA_USERNAME);
-      $CMD[] = array('@USUA_PASSWORD',$USUA_PASSWORD);
-      $CMD[] = array('@PERS_CODIGO',$PERS_CODIGO);
-      $CMD[] = array('@AREA_CODIGO',$AREA_CODIGO);
-      $CMD[] = array('@USEA_TOKEN',$USEA_TOKEN);
+      $CMD[] = array('@OPTION',5);
+      $CMD[] = array('@PERS_DOCUMENTO',$PERS_DOCUMENTO);
+      $CMD[] = array('@PERS_NOMCOM',$PERS_NOMCOM);
       $READ = exec_query("ACCESOS.SP_LOGIN",$CMD);
-      return  $READ;
-      if(intval($READ[0]->RESULT) > 0){
-         return  $this->selectUser(3,5);
+      $PERS_CODIGO = $READ[0]->RESULT;
+      $STATUS = $READ[0]->STATUS;
+      if(intval($STATUS) == 1 || intval($STATUS) == 2){
+         unset($CMD);
+         $CMD[] = array('@OPTION',4);
+         $CMD[] = array('@PERF_CODIGO',$PERF_CODIGO);
+         $CMD[] = array('@USUA_USERNAME',$USUA_USERNAME);
+         $CMD[] = array('@USUA_PASSWORD',$USUA_PASSWORD);
+         $CMD[] = array('@PERS_CODIGO',$PERS_CODIGO);
+         $CMD[] = array('@AREA_CODIGO',$AREA_CODIGO);
+         $CMD[] = array('@USEA_TOKEN',$USEA_TOKEN);
+         $READ = exec_query("ACCESOS.SP_LOGIN",$CMD);
+         return response()->json(['DATA'=> $READ[0]],200);
       }
    }
 }
